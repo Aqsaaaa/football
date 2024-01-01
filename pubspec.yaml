@@ -1,4 +1,4 @@
-name: basketball
+name: football_app
 description: "A new Flutter project."
 publish_to: 'none'
 version: 0.1.0
@@ -10,7 +10,9 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_svg: ^2.0.9
+  google_fonts: ^6.1.0
   http: ^1.1.2
+  url_launcher: ^6.2.2
 
 dev_dependencies:
   flutter_test:
