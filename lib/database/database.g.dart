@@ -71,7 +71,7 @@ class _$AppDatabase extends AppDatabase {
     Callback? callback,
   ]) async {
     final databaseOptions = sqflite.OpenDatabaseOptions(
-      version: 1,
+      version: 2,
       onConfigure: (database) async {
         await database.execute('PRAGMA foreign_keys = ON');
         await callback?.onConfigure?.call(database);
@@ -89,7 +89,7 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Teams` (`id` INTEGER NOT NULL, `name` TEXT NOT NULL, `shortName` TEXT NOT NULL, `crest` TEXT NOT NULL, `tla` TEXT NOT NULL, `stadium` TEXT NOT NULL, `website` TEXT NOT NULL, `founded` TEXT NOT NULL, `clubColors` TEXT NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Countries` (`id` INTEGER NOT NULL, `title` TEXT NOT NULL, `adult` INTEGER NOT NULL, `popularity` REAL NOT NULL, PRIMARY KEY (`id`))');
+            'CREATE TABLE IF NOT EXISTS `Countries` (`id` INTEGER NOT NULL, `name` TEXT NOT NULL, `flag` TEXT NOT NULL, `parentArea` TEXT NOT NULL, PRIMARY KEY (`id`))');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -189,9 +189,9 @@ class _$CountriesDao extends CountriesDao {
             'Countries',
             (Countries item) => <String, Object?>{
                   'id': item.id,
-                  'title': item.title,
-                  'adult': item.adult ? 1 : 0,
-                  'popularity': item.popularity
+                  'name': item.name,
+                  'flag': item.flag,
+                  'parentArea': item.parentArea
                 });
 
   final sqflite.DatabaseExecutor database;
@@ -207,9 +207,9 @@ class _$CountriesDao extends CountriesDao {
     return _queryAdapter.queryList('SELECT * FROM Countries',
         mapper: (Map<String, Object?> row) => Countries(
             row['id'] as int,
-            row['title'] as String,
-            (row['adult'] as int) != 0,
-            row['popularity'] as double));
+            row['name'] as String,
+            row['flag'] as String,
+            row['parentArea'] as String));
   }
 
   @override
@@ -217,9 +217,9 @@ class _$CountriesDao extends CountriesDao {
     return _queryAdapter.query('SELECT * FROM Countries WHERE id = ?1',
         mapper: (Map<String, Object?> row) => Countries(
             row['id'] as int,
-            row['title'] as String,
-            (row['adult'] as int) != 0,
-            row['popularity'] as double),
+            row['name'] as String,
+            row['flag'] as String,
+            row['parentArea'] as String),
         arguments: [id]);
   }
 

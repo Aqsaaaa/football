@@ -1,8 +1,13 @@
+// ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously
+
 import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import 'country_detail.dart';
+import 'database/database.dart';
+import 'database/likes.dart';
 
 class AreaPage extends StatefulWidget {
   const AreaPage({Key? key}) : super(key: key);
@@ -12,15 +17,12 @@ class AreaPage extends StatefulWidget {
 }
 
 class _AreaPageState extends State<AreaPage> {
+  late Future<AppDatabase> databaseFuture;
+  late Future<List<Countries>> countriesFuture;
+  List<Map<String, dynamic>> filteredAreas = [];
+
   final String apiKey = '01c635bc90944fa089f8288e76f78a94';
   TextEditingController searchController = TextEditingController();
-  late Future<List<Map<String, dynamic>>> areasFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    areasFuture = getAreas();
-  }
 
   Future<List<Map<String, dynamic>>> getAreas() async {
     final response = await http.get(
@@ -33,7 +35,7 @@ class _AreaPageState extends State<AreaPage> {
       final List<dynamic> areas = data['areas'] ?? [];
       return areas.cast<Map<String, dynamic>>();
     } else {
-      throw Exception('Failed to load area data');
+      throw Exception('Failed to load team data');
     }
   }
 
@@ -43,6 +45,55 @@ class _AreaPageState extends State<AreaPage> {
       final name = area['name'].toString().toLowerCase();
       return name.contains(query.toLowerCase());
     }).toList();
+  }
+
+  Future<List<Countries>> getkCountries() async {
+    final database = await databaseFuture;
+    return database.countriesDao.findAllCountries();
+  }
+
+  Future<void> _addAllCountries(int index) async {
+    final database = await databaseFuture;
+
+    if (index >= 0 && index < filteredAreas.length) {
+      final dynamic countryData = filteredAreas[index];
+
+      final int id = countryData['id'] ?? Random().nextInt(1000);
+      final String name = countryData['name'] ?? 'Unknown Name';
+      final String parentArea =
+          countryData['parentArea'] ?? 'Unknown Parent Area';
+      final String flag = countryData['flag'] ?? 'Unknown Flag URL';
+
+      final Countries countryToAdd = Countries(
+        id,
+        name,
+        parentArea,
+        flag,
+      );
+
+      await database.countriesDao.insertCountries(countryToAdd);
+
+      setState(() {
+        countriesFuture = getkCountries();
+      });
+    }
+  }
+
+  Future<bool> _isCountries(int index) async {
+    final database = await databaseFuture;
+    final dynamic country = filteredAreas[index];
+    final int id = country['id'];
+
+    final existingFavorite = await database.countriesDao.findCountriesById(id);
+    return existingFavorite != null;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    databaseFuture = $FloorAppDatabase.databaseBuilder('football.db').build();
+    countriesFuture = getkCountries();
   }
 
   @override
@@ -67,7 +118,7 @@ class _AreaPageState extends State<AreaPage> {
             ),
             Expanded(
               child: FutureBuilder<List<Map<String, dynamic>>>(
-                future: areasFuture,
+                future: getAreas(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(
@@ -79,7 +130,7 @@ class _AreaPageState extends State<AreaPage> {
                     );
                   } else {
                     final List<Map<String, dynamic>> areas = snapshot.data!;
-                    final filteredAreas =
+                    var filteredAreas =
                         filterAreas(searchController.text, areas);
 
                     return ListView.builder(
@@ -104,14 +155,83 @@ class _AreaPageState extends State<AreaPage> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: <Widget>[
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    area['name'],
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                  Row(
+                                    children: [
+                                      Column(
+                                        children: [
+                                          Text(
+                                            area['name'],
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          Text('(${area['parentArea']})'),
+                                        ],
+                                      ),
+                                      // IconButton(
+                                      //   onPressed: () async {
+                                      //     final database = await databaseFuture;
+
+                                      //     if (index >= 0 &&
+                                      //         index < filteredAreas.length) {
+                                      //       final filteredCountry =
+                                      //           filteredAreas[index];
+                                      //       final id =
+                                      //           filteredCountry['id'] ?? 0;
+                                      //       final isFavorite =
+                                      //           await _isCountries(id);
+
+                                      //       if (isFavorite) {
+                                      //         await database.countriesDao
+                                      //             .deleteCountriesById(id);
+                                      //         ScaffoldMessenger.of(context)
+                                      //             .showSnackBar(
+                                      //           const SnackBar(
+                                      //             content: Text(
+                                      //                 'Removed from favorites'),
+                                      //             duration:
+                                      //                 Duration(seconds: 1),
+                                      //           ),
+                                      //         );
+                                      //       } else {
+                                      //         await _addAllCountries(index);
+                                      //         ScaffoldMessenger.of(context)
+                                      //             .showSnackBar(
+                                      //           const SnackBar(
+                                      //             content: Text(
+                                      //                 'Added to favorites'),
+                                      //             duration:
+                                      //                 Duration(seconds: 1),
+                                      //           ),
+                                      //         );
+                                      //       }
+
+                                      //       setState(() {
+                                      //         // Ensure the UI updates by clearing out the old data
+                                      //         filteredAreas = [];
+                                      //         countriesFuture = getkCountries();
+                                      //       });
+                                      //     }
+                                      //   },
+                                      //   icon: FutureBuilder<bool>(
+                                      //     future: _isCountries(index),
+                                      //     builder: (context, snapshot) {
+                                      //       if (snapshot.connectionState ==
+                                      //           ConnectionState.waiting) {
+                                      //         // Show a placeholder or loading indicator while waiting for the future to complete
+                                      //         return const CircularProgressIndicator();
+                                      //       } else if (snapshot.data == true) {
+                                      //         return const Icon(Icons.bookmark,
+                                      //             color: Colors.yellow);
+                                      //       } else {
+                                      //         return const Icon(
+                                      //             Icons.bookmark_border);
+                                      //       }
+                                      //     },
+                                      //   ),
+                                      // ),
+                                    ],
                                   ),
-                                  Text('(${area['parentArea']})'),
                                 ],
                               ),
                             ),

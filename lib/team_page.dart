@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
 import 'dart:math';
 
@@ -56,7 +58,7 @@ class _TeamPageState extends State<TeamPage> {
     final String website = teamData['website'] ?? 'Unknown Website';
     final String founded = teamData['founded']?.toString() ?? 'Unknown Founded';
     final String clubColors = teamData['clubColors'] ?? 'Unknown Club Colors';
-    final String crestUrl = teamData['crestUrl'] ?? 'Unknown Crest URL';
+    final String crestUrl = teamData['crest'] ?? 'Unknown Crest URL';
     final String shortName = teamData['shortName'] ?? 'Unknown Short Name';
 
     final Teams teamToAdd = Teams(
@@ -99,7 +101,10 @@ class _TeamPageState extends State<TeamPage> {
   @override
   void initState() {
     super.initState();
-    databaseFuture = $FloorAppDatabase.databaseBuilder('football.db').build();
+    databaseFuture = $FloorAppDatabase
+        .databaseBuilder('football.db')
+        .addMigrations([AppDatabase.migration1to2]) // Tambahkan migrasi di sini
+        .build();
     teamsFuture = getkTeams();
   }
 
@@ -120,7 +125,6 @@ class _TeamPageState extends State<TeamPage> {
                 child: Text('Error: ${snapshot.error}'),
               );
             } else {
-              // Perbaikan: Menggunakan variabel teams yang sudah diisi
               teams = snapshot.data as List<dynamic>;
 
               return GridView.builder(
@@ -146,16 +150,16 @@ class _TeamPageState extends State<TeamPage> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: <Widget>[
-                            if (team['crestUrl'] != null)
-                              team['crestUrl'].endsWith('.svg')
+                            if (team['crest'] != null)
+                              team['crest'].endsWith('.svg')
                                   ? SvgPicture.network(
-                                      team['crestUrl'],
+                                      team['crest'],
                                       width: 100,
                                       height: 100,
                                       fit: BoxFit.contain,
                                     )
                                   : Image.network(
-                                      team['crestUrl'],
+                                      team['crest'],
                                       width: 100,
                                       height: 100,
                                       fit: BoxFit.contain,

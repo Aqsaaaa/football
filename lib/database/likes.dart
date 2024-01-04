@@ -30,14 +30,14 @@ class Teams {
 class Countries {
   @primaryKey
   final int id;
-  final String title;
-  final bool adult;
-  final double popularity;
+  final String name;
+  final String flag;
+  final String parentArea;
 
   Countries(
     this.id,
-    this.title,
-    this.adult,
-    this.popularity,
+    this.name,
+    this.flag,
+    this.parentArea,
   );
 }

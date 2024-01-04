@@ -1,12 +1,14 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:flutter/material.dart';
 import 'package:football_app/country_page.dart';
+import 'package:football_app/favorite_teams.dart';
 import 'package:football_app/team_page.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  // ignore: library_private_types_in_public_api
   _HomeScreenState createState() => _HomeScreenState();
 }
 
@@ -16,6 +18,7 @@ class _HomeScreenState extends State<HomeScreen> {
   static final List<Widget> _screens = [
     const TeamPage(),
     const AreaPage(),
+    const FavoriteTeams(),
   ];
 
   void _onItemTapped(int index) {
@@ -63,6 +66,10 @@ class _HomeScreenState extends State<HomeScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.flag_circle_outlined),
             label: 'Countries',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.shield_outlined),
+            label: 'F Teams',
           ),
         ],
         currentIndex: _selectedIndex,
