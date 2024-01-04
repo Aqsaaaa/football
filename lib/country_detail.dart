@@ -9,6 +9,7 @@ class CountryDetailPage extends StatefulWidget {
   const CountryDetailPage({Key? key, required this.country}) : super(key: key);
 
   @override
+  // ignore: library_private_types_in_public_api
   _CountryDetailPageState createState() => _CountryDetailPageState();
 }
 
@@ -66,7 +67,7 @@ class _CountryDetailPageState extends State<CountryDetailPage> {
               ),
               const SizedBox(height: 8),
               widget.country['flag'] == null
-                  ? const Text('No Flag Image')
+                  ? Image.asset('assets/missing_flag.png', width: 200, height: 200)
                   : widget.country['flag'].endsWith('.svg')
                       ? SvgPicture.network(
                           widget.country['flag'],
@@ -93,6 +94,7 @@ class _CountryDetailPageState extends State<CountryDetailPage> {
 
                   if (isFavorite) {
                     await database.countriesDao.deleteCountriesById(countryId);
+                    // ignore: use_build_context_synchronously
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('Removed from favorites'),
@@ -101,6 +103,7 @@ class _CountryDetailPageState extends State<CountryDetailPage> {
                     );
                   } else {
                     await _addAllCountries(countryId);
+                    // ignore: use_build_context_synchronously
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('Added to favorites'),

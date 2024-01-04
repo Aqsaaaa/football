@@ -33,7 +33,6 @@ class _FavoriteCountriesState extends State<FavoriteCountries> {
         if (snapshot.connectionState == ConnectionState.done &&
             snapshot.hasData) {
           var teams = snapshot.data![1] as List<Countries>;
-          print('Number of teams: ${teams.length}');
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
