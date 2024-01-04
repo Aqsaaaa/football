@@ -1,6 +1,5 @@
-
 import 'package:flutter/material.dart';
-import 'package:football_app/favorite_page.dart';
+import 'package:football_app/country_page.dart';
 import 'package:football_app/team_page.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -16,7 +15,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   static final List<Widget> _screens = [
     const TeamPage(),
-    const FavoritePage(),
+    const AreaPage(),
   ];
 
   void _onItemTapped(int index) {
@@ -58,12 +57,12 @@ class _HomeScreenState extends State<HomeScreen> {
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.flag_circle_outlined),
+            icon: Icon(Icons.shield_moon_outlined),
             label: 'Teams',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.favorite_border),
-            label: 'Liked',
+            icon: Icon(Icons.flag_circle_outlined),
+            label: 'Countries',
           ),
         ],
         currentIndex: _selectedIndex,

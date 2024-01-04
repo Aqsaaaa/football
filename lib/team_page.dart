@@ -1,13 +1,16 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:football_app/database/likes.dart';
 import 'package:http/http.dart' as http;
 
+import 'database/database.dart';
 import 'team_detail.dart';
 
 class TeamPage extends StatefulWidget {
-  const TeamPage({super.key});
+  const TeamPage({Key? key}) : super(key: key);
 
   @override
   // ignore: library_private_types_in_public_api
@@ -15,6 +18,10 @@ class TeamPage extends StatefulWidget {
 }
 
 class _TeamPageState extends State<TeamPage> {
+  late Future<AppDatabase> databaseFuture;
+  late Future<List<Teams>> teamsFuture;
+  List<dynamic> teams = [];
+
   final String apiKey = '01c635bc90944fa089f8288e76f78a94';
 
   Future<List<dynamic>> getTeams() async {
@@ -26,10 +33,58 @@ class _TeamPageState extends State<TeamPage> {
     );
 
     if (response.statusCode == 200) {
-      return json.decode(response.body)['teams'];
+      final teams = json.decode(response.body)['teams'] ?? [];
+      return teams;
     } else {
       throw Exception('Failed to load team data');
     }
+  }
+
+  Future<List<Teams>> getkTeams() async {
+    final database = await databaseFuture;
+    return database.teamsDao.findAllTeams();
+  }
+
+  Future<void> _addAllTeams(int index) async {
+    final database = await databaseFuture;
+    final dynamic teamData = teams[index];
+
+    final int id = teamData['id'] ?? Random().nextInt(1000);
+    final String name = teamData['name'] ?? 'Unknown Name';
+    final String tla = teamData['tla'] ?? 'Unknown TLA';
+    final String stadium = teamData['stadium'] ?? 'Unknown Stadium';
+    final String website = teamData['website'] ?? 'Unknown Website';
+    final String founded = teamData['founded']?.toString() ?? 'Unknown Founded';
+    final String clubColors = teamData['clubColors'] ?? 'Unknown Club Colors';
+    final String crestUrl = teamData['crestUrl'] ?? 'Unknown Crest URL';
+    final String shortName = teamData['shortName'] ?? 'Unknown Short Name';
+
+    final Teams teamToAdd = Teams(
+      id,
+      name,
+      tla,
+      stadium,
+      website,
+      founded,
+      clubColors,
+      shortName,
+      crestUrl,
+    );
+
+    await database.teamsDao.insertTeams(teamToAdd);
+
+    setState(() {
+      teamsFuture = getkTeams();
+    });
+  }
+
+  Future<bool> _isTeams(int index) async {
+    final database = await databaseFuture;
+    final dynamic team = teams[index];
+    final int id = team['id'] ?? 0;
+
+    final existingFavorite = await database.teamsDao.findTeamsById(id);
+    return existingFavorite != null;
   }
 
   void navigateToDetailTeamPage(dynamic team) {
@@ -39,6 +94,13 @@ class _TeamPageState extends State<TeamPage> {
         builder: (context) => DetailTeamPage(team: team),
       ),
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    databaseFuture = $FloorAppDatabase.databaseBuilder('football.db').build();
+    teamsFuture = getkTeams();
   }
 
   @override
@@ -58,7 +120,8 @@ class _TeamPageState extends State<TeamPage> {
                 child: Text('Error: ${snapshot.error}'),
               );
             } else {
-              final List? teams = snapshot.data;
+              // Perbaikan: Menggunakan variabel teams yang sudah diisi
+              teams = snapshot.data as List<dynamic>;
 
               return GridView.builder(
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -68,9 +131,9 @@ class _TeamPageState extends State<TeamPage> {
                   crossAxisSpacing: 10,
                   mainAxisSpacing: 10,
                 ),
-                itemCount: teams?.length,
+                itemCount: teams.length,
                 itemBuilder: (context, index) {
-                  final team = teams?[index];
+                  final team = teams[index];
                   return InkWell(
                     onTap: () {
                       navigateToDetailTeamPage(team);
@@ -83,16 +146,16 @@ class _TeamPageState extends State<TeamPage> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: <Widget>[
-                            if (team['crest'] != null)
-                              team['crest'].endsWith('.svg')
+                            if (team['crestUrl'] != null)
+                              team['crestUrl'].endsWith('.svg')
                                   ? SvgPicture.network(
-                                      team['crest'],
+                                      team['crestUrl'],
                                       width: 100,
                                       height: 100,
                                       fit: BoxFit.contain,
                                     )
                                   : Image.network(
-                                      team['crest'],
+                                      team['crestUrl'],
                                       width: 100,
                                       height: 100,
                                       fit: BoxFit.contain,
@@ -102,6 +165,53 @@ class _TeamPageState extends State<TeamPage> {
                               team['name'],
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: () async {
+                                final database = await databaseFuture;
+                                final team = teams[index];
+                                final id = team['id'] ?? 0;
+                                final isFavorite = await _isTeams(index);
+
+                                if (isFavorite) {
+                                  await database.teamsDao.deleteTeamsById(id);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Removed from favorites'),
+                                      duration: Duration(seconds: 1),
+                                    ),
+                                  );
+                                } else {
+                                  await _addAllTeams(index);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Added to favorites'),
+                                      duration: Duration(seconds: 1),
+                                    ),
+                                  );
+                                }
+
+                                setState(() {
+                                  // Ensure the UI updates by clearing out the old data
+                                  teams = [];
+                                  teamsFuture = getkTeams();
+                                });
+                              },
+                              icon: FutureBuilder<bool>(
+                                future: _isTeams(index),
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    // Show a placeholder or loading indicator while waiting for the future to complete
+                                    return const CircularProgressIndicator();
+                                  } else if (snapshot.data == true) {
+                                    return const Icon(Icons.bookmark,
+                                        color: Colors.yellow);
+                                  } else {
+                                    return const Icon(Icons.bookmark_border);
+                                  }
+                                },
                               ),
                             ),
                             Text('(${team['tla']})'),
@@ -119,4 +229,3 @@ class _TeamPageState extends State<TeamPage> {
     );
   }
 }
-
