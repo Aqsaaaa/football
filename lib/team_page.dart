@@ -54,7 +54,7 @@ class _TeamPageState extends State<TeamPage> {
     final int id = teamData['id'] ?? Random().nextInt(1000);
     final String name = teamData['name'] ?? 'Unknown Name';
     final String tla = teamData['tla'] ?? 'Unknown TLA';
-    final String stadium = teamData['stadium'] ?? 'Unknown Stadium';
+    final String stadium = teamData['venue'] ?? 'Unknown Stadium';
     final String website = teamData['website'] ?? 'Unknown Website';
     final String founded = teamData['founded']?.toString() ?? 'Unknown Founded';
     final String clubColors = teamData['clubColors'] ?? 'Unknown Club Colors';

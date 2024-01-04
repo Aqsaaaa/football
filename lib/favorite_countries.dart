@@ -30,8 +30,12 @@ class _FavoriteCountriesState extends State<FavoriteCountries> {
     return FutureBuilder(
       future: Future.wait([databaseFuture, countriesFuture]),
       builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
-        if (snapshot.connectionState == ConnectionState.done &&
-            snapshot.hasData) {
+        if (snapshot.connectionState == ConnectionState.done) {
+          if (snapshot.hasError) {
+            print('Error: ${snapshot.error}');
+            return Text('Error: ${snapshot.error}');
+          }
+          print(snapshot.data);
           var teams = snapshot.data![1] as List<Countries>;
           return Column(
             mainAxisSize: MainAxisSize.min,

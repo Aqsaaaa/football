@@ -3,6 +3,7 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:http/http.dart' as http;
 
 import 'country_detail.dart';
@@ -156,82 +157,34 @@ class _AreaPageState extends State<AreaPage> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: <Widget>[
-                                  Row(
-                                    children: [
-                                      Column(
-                                        children: [
-                                          Text(
-                                            area['name'],
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                            ),
+                                  Center(
+                                    child: Column(
+                                      children: [
+                                        // area['flag'] == null
+                                        //     ? Image.asset(
+                                        //         'assets/missing_flag.png',
+                                        //         width: 100,
+                                        //         height: 100)
+                                        //     : area['flag'].endsWith('.svg')
+                                        //         ? SvgPicture.network(
+                                        //             area['flag'],
+                                        //             width: 100,
+                                        //             height: 100,
+                                        //           )
+                                        //         : Image.network(
+                                        //             area['flag'],
+                                        //             width: 100,
+                                        //             height: 100,
+                                        //           ),
+                                        Text(
+                                          area['name'],
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
                                           ),
-                                          Text('(${area['parentArea']})'),
-                                        ],
-                                      ),
-                                      // IconButton(
-                                      //   onPressed: () async {
-                                      //     final database = await databaseFuture;
-
-                                      //     if (index >= 0 &&
-                                      //         index < filteredAreas.length) {
-                                      //       final filteredCountry =
-                                      //           filteredAreas[index];
-                                      //       final id =
-                                      //           filteredCountry['id'] ?? 0;
-                                      //       final isFavorite =
-                                      //           await _isCountries(id);
-
-                                      //       if (isFavorite) {
-                                      //         await database.countriesDao
-                                      //             .deleteCountriesById(id);
-                                      //         ScaffoldMessenger.of(context)
-                                      //             .showSnackBar(
-                                      //           const SnackBar(
-                                      //             content: Text(
-                                      //                 'Removed from favorites'),
-                                      //             duration:
-                                      //                 Duration(seconds: 1),
-                                      //           ),
-                                      //         );
-                                      //       } else {
-                                      //         await _addAllCountries(index);
-                                      //         ScaffoldMessenger.of(context)
-                                      //             .showSnackBar(
-                                      //           const SnackBar(
-                                      //             content: Text(
-                                      //                 'Added to favorites'),
-                                      //             duration:
-                                      //                 Duration(seconds: 1),
-                                      //           ),
-                                      //         );
-                                      //       }
-
-                                      //       setState(() {
-                                      //         // Ensure the UI updates by clearing out the old data
-                                      //         filteredAreas = [];
-                                      //         countriesFuture = getkCountries();
-                                      //       });
-                                      //     }
-                                      //   },
-                                      //   icon: FutureBuilder<bool>(
-                                      //     future: _isCountries(index),
-                                      //     builder: (context, snapshot) {
-                                      //       if (snapshot.connectionState ==
-                                      //           ConnectionState.waiting) {
-                                      //         // Show a placeholder or loading indicator while waiting for the future to complete
-                                      //         return const CircularProgressIndicator();
-                                      //       } else if (snapshot.data == true) {
-                                      //         return const Icon(Icons.bookmark,
-                                      //             color: Colors.yellow);
-                                      //       } else {
-                                      //         return const Icon(
-                                      //             Icons.bookmark_border);
-                                      //       }
-                                      //     },
-                                      //   ),
-                                      // ),
-                                    ],
+                                        ),
+                                        Text('(${area['parentArea']})'),
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),

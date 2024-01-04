@@ -60,7 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
           centerTitle: true,
           title: const Text(
-            'Football Data',
+            'BolaKita',
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
