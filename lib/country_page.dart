@@ -148,6 +148,7 @@ class _AreaPageState extends State<AreaPage> {
                             );
                           },
                           child: Card(
+                            color: Colors.transparent,
                             elevation: 1,
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),

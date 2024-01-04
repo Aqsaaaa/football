@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:football_app/country_page.dart';
 import 'package:football_app/favorite_teams.dart';
 import 'package:football_app/team_page.dart';
+import 'package:football_app/theme.dart';
+import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -29,6 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final themeState = Provider.of<ThemeProvider>(context);
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(80),
@@ -43,6 +46,18 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
+          actions: [
+            IconButton(
+              icon: Icon(themeState.darkTheme
+                  ? Icons.light_mode_outlined
+                  : Icons.dark_mode_outlined),
+              onPressed: () {
+                setState(() {
+                  themeState.setDarkTheme = !themeState.darkTheme;
+                });
+              },
+            ),
+          ],
           centerTitle: true,
           title: const Text(
             'Football Data',

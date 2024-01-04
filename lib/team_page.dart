@@ -143,6 +143,7 @@ class _TeamPageState extends State<TeamPage> {
                       navigateToDetailTeamPage(team);
                     },
                     child: Card(
+                      color: Colors.transparent,
                       elevation: 1,
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
@@ -210,10 +211,11 @@ class _TeamPageState extends State<TeamPage> {
                                     // Show a placeholder or loading indicator while waiting for the future to complete
                                     return const CircularProgressIndicator();
                                   } else if (snapshot.data == true) {
-                                    return const Icon(Icons.bookmark,
-                                        color: Colors.yellow);
+                                    return const Icon(Icons.favorite,
+                                        color: Colors.red);
                                   } else {
-                                    return const Icon(Icons.bookmark_border);
+                                    return const Icon(
+                                        Icons.favorite_border_outlined);
                                   }
                                 },
                               ),
